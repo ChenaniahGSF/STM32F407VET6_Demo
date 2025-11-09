@@ -26,11 +26,15 @@
 #define logger_info(format, ...)  {lwprintf("[%s][%s][%d]:"format, LOG_TAG, __func__, __LINE__, ##__VA_ARGS__);lwprintf("\r\n");}
 #define logger_warn(format, ...)  {lwprintf("[%s][%s][%d]:"format, LOG_TAG, __func__, __LINE__, ##__VA_ARGS__);lwprintf("\r\n");}
 #define logger_error(format, ...) {lwprintf("[%s][%s][%d]:"format, LOG_TAG, __func__, __LINE__, ##__VA_ARGS__);lwprintf("\r\n");}
+
+#define logger_printf  lwprintf
 #else
 #define logger_debug(format, ...) {printf("[%s][%s][%d]:"format, LOG_TAG, __func__, __LINE__, ##__VA_ARGS__);printf("\r\n");}
 #define logger_info(format, ...)  {printf("[%s][%s][%d]:"format, LOG_TAG, __func__, __LINE__, ##__VA_ARGS__);printf("\r\n");}
 #define logger_warn(format, ...)  {printf("[%s][%s][%d]:"format, LOG_TAG, __func__, __LINE__, ##__VA_ARGS__);printf("\r\n");}
 #define logger_error(format, ...) {printf("[%s][%s][%d]:"format, LOG_TAG, __func__, __LINE__, ##__VA_ARGS__);printf("\r\n");}
+
+#define logger_printf  printf
 #endif
 
 #else

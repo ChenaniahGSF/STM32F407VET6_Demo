@@ -6,7 +6,7 @@
  */
 #include "multi_button_user.h"
 #include "logger.h"
-#include "main.h"
+#include "tim.h"
 
 #define MAX_BUTTONS  (2)
 
@@ -87,9 +87,9 @@ void on_long_press_hold(Button* btn) { generic_event_handler(btn, "Long Press Ho
 void on_press_repeat(Button* btn) { generic_event_handler(btn, "Press Repeat"); }
 
 // Initialize a single button with all event handlers
-void init_button(int index, uint8_t button_id, int enable_all_events)
+void init_button(int index, uint8_t button_id, uint8_t active_level, int enable_all_events)
 {
-    button_init(&buttons[index], read_button_gpio, 0, button_id);
+    button_init(&buttons[index], read_button_gpio, active_level, button_id);
     if (enable_all_events) {
         button_attach(&buttons[index], BTN_PRESS_DOWN, on_press_down);
         button_attach(&buttons[index], BTN_PRESS_UP, on_press_up);
@@ -110,9 +110,11 @@ void init_button(int index, uint8_t button_id, int enable_all_events)
 // Initialize all buttons
 void buttons_init(void)
 {
-    init_button(0, 1, 0);
-    init_button(1, 2, 0);
+    init_button(0, 1, 0, 0);
+    init_button(1, 2, 0, 0);
     // setting special event callback
     button_detach(&buttons[1], BTN_DOUBLE_CLICK);
     button_attach(&buttons[1], BTN_DOUBLE_CLICK, on_config_button_click);
+
+    HAL_TIM_Base_Start_IT(&htim6);
 }

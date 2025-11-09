@@ -21,6 +21,10 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+#include "lwrb/lwrb.h"
+#include "lwutil/lwutil.h"
+#include "lwshell/lwshell.h"
+#include "lwshell/lwshell_user.h"
 
 /* USER CODE END 0 */
 
@@ -138,5 +142,60 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
+#if 0
+uint8_t uart_rx_buf[1];
+//uart interrupt mode, without dma
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart == &huart1) {
+    lwshell_input(uart_rx_buf, 1);
+    HAL_UART_Receive_IT(&huart1, uart_rx_buf, 1);
+  }
+}
+#endif
 
+lwrb_t usart_tx_rb;
+uint8_t usart_tx_rb_data[128];
+
+volatile size_t usart_tx_dma_current_len = 0;
+uint8_t usart_rx_dma_buffer[64];
+
+void usart_rx_check(size_t pos) {
+    static size_t old_pos;
+
+    if (pos != old_pos) {
+        if (pos > old_pos) {
+            lwrb_write(&usart_tx_rb, &usart_rx_dma_buffer[old_pos], pos - old_pos);
+        } else {
+            lwrb_write(&usart_tx_rb, &usart_rx_dma_buffer[old_pos], LWUTIL_ARRAYSIZE(usart_rx_dma_buffer) - old_pos);
+            if (pos > 0) {
+                lwrb_write(&usart_tx_rb, &usart_rx_dma_buffer[0], pos);
+            }
+        }
+        old_pos = pos;
+    }
+}
+
+//uart HT TC IDLE event will trigger this callback, dma mode enable
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
+  if (huart == &huart1) {
+    usart_rx_check(Size);
+
+    if (usart_tx_dma_current_len == 0 && (usart_tx_dma_current_len = lwrb_get_linear_block_read_length(&usart_tx_rb)) > 0) {
+      lwshell_input(lwrb_get_linear_block_read_address(&usart_tx_rb), usart_tx_dma_current_len);
+
+      lwrb_skip(&usart_tx_rb, usart_tx_dma_current_len);
+      usart_tx_dma_current_len = 0;
+    }
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart_rx_dma_buffer, sizeof(usart_rx_dma_buffer));
+  }
+}
+
+void uart_init(void) {
+  lwrb_init(&usart_tx_rb, usart_tx_rb_data, sizeof(usart_tx_rb_data));
+
+  //HAL_UART_Receive_IT(&huart1, uart_rx_buf, sizeof(uart_rx_buf));
+  //will enable HT TC IDLE event
+  HAL_UARTEx_ReceiveToIdle_DMA(&huart1, usart_rx_dma_buffer, sizeof(usart_rx_dma_buffer));
+}
 /* USER CODE END 1 */

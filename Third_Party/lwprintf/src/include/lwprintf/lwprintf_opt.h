@@ -130,7 +130,7 @@ extern "C" {
  *
  */
 #ifndef LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING
-#define LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING 0
+#define LWPRINTF_CFG_SUPPORT_TYPE_ENGINEERING 1
 #endif
 
 /**
@@ -166,7 +166,7 @@ extern "C" {
  * It adds functions for default instance: `lwprintf`, `lwsnprintf` and others
  */
 #ifndef LWPRINTF_CFG_ENABLE_SHORTNAMES
-#define LWPRINTF_CFG_ENABLE_SHORTNAMES 1
+#define LWPRINTF_CFG_ENABLE_SHORTNAMES 0
 #endif /* LWPRINTF_CFG_ENABLE_SHORTNAMES */
 
 /**

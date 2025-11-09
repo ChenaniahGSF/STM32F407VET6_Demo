@@ -37,17 +37,11 @@
 /* Rename this file to "lwshell_opts.h" for your application */
 
 #define LWSHELL_CFG_USE_DYNAMIC_COMMANDS 1
-
 #define LWSHELL_CFG_MAX_CMDS 16
-
 #define LWSHELL_CFG_MAX_INPUT_LEN 128
-
 #define LWSHELL_CFG_MAX_CMD_NAME_LEN 32
-
 #define LWSHELL_CFG_MAX_CMD_ARGS 8
-
 #define LWSHELL_CFG_USE_OUTPUT 1
-
 #define LWSHELL_CFG_USE_LIST_CMD 1
 
 /*

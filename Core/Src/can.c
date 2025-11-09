@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "can.h"
+#include "logger.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -54,7 +55,21 @@ void MX_CAN1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN1_Init 2 */
+  CAN_FilterTypeDef can_filter;
+  can_filter.FilterBank = 0;
+  can_filter.FilterMode = CAN_FILTERMODE_IDMASK;
+  can_filter.FilterFIFOAssignment = CAN_RX_FIFO0;
+  can_filter.FilterIdHigh = 0;
+  can_filter.FilterIdLow = 0;
+  can_filter.FilterMaskIdHigh = 0;
+  can_filter.FilterMaskIdLow = 0;
+  can_filter.FilterScale = CAN_FILTERSCALE_32BIT;
+  can_filter.FilterActivation = ENABLE;
+  can_filter.SlaveStartFilterBank = 14;
 
+  HAL_CAN_ConfigFilter(&hcan1, &can_filter);
+  HAL_CAN_Start(&hcan1);
+  HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
   /* USER CODE END CAN1_Init 2 */
 
 }
@@ -118,5 +133,56 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 }
 
 /* USER CODE BEGIN 1 */
+CAN_RxHeaderTypeDef rx_header;
+uint8_t can_rx_data[8];
+
+HAL_StatusTypeDef Can_Send_Message(CAN_HandleTypeDef* hcan, uint32_t id, uint8_t* data, uint8_t len)
+{
+  CAN_TxHeaderTypeDef TxHeader;
+  uint32_t TxMailbox;
+  HAL_StatusTypeDef ret;
+
+  if(len > 8) {
+    return HAL_ERROR;
+  }
+
+  TxHeader.StdId = id;
+  TxHeader.ExtId = 0;
+  TxHeader.RTR = CAN_RTR_DATA;
+  TxHeader.IDE = CAN_ID_STD;
+  TxHeader.DLC = len;
+  TxHeader.TransmitGlobalTime = DISABLE;
+
+  ret = HAL_CAN_AddTxMessage(hcan, &TxHeader, data, &TxMailbox);
+  if (ret != HAL_OK) {
+    return HAL_ERROR;
+  } else {
+    //logger_info("Can Send Successfully.");
+  }
+#if 1
+  uint32_t timeout = 5;
+  while (HAL_CAN_GetTxMailboxesFreeLevel(hcan) != 3) {
+    if (timeout-- == 0) {
+      uint32_t error = HAL_CAN_GetError(hcan);
+      if(error) {
+        logger_error("Failed error code: 0x%x", error);
+      }
+      return HAL_TIMEOUT;
+    }
+    HAL_Delay(50);
+  }
+#endif
+
+  return HAL_OK;
+}
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+  if(hcan->Instance == CAN1) {
+    HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header, can_rx_data);
+    HAL_GPIO_TogglePin(USER_LED_GPIO_Port, USER_LED_Pin);
+    logger_hex(can_rx_data, sizeof(can_rx_data));
+  }
+}
 
 /* USER CODE END 1 */

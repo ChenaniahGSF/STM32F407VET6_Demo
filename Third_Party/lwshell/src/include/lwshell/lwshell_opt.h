@@ -161,6 +161,10 @@ extern "C" {
 #define LWSHELL_CFG_USE_LIST_CMD 0
 #endif
 
+
+#ifndef LWSHELL_CFG_PRINT_DESCRIPTION
+#define LWSHELL_CFG_PRINT_DESCRIPTION 0
+#endif
 /**
  * \}
  */

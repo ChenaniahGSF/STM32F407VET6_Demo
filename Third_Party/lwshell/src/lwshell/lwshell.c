@@ -190,6 +190,7 @@ prv_parse_input(lwshell_t* lwobj) {
 
         /* Valid command ready? */
         if (ccmd != NULL) {
+#if LWSHELL_CFG_PRINT_DESCRIPTION
             if (lwobj->argc == 2U && lwobj->argv[1][0] == '-' && lwobj->argv[1][1] == 'h'
                 && lwobj->argv[1][2] == '\0') {
                 /* Here we can print version */
@@ -198,6 +199,9 @@ prv_parse_input(lwshell_t* lwobj) {
             } else {
                 ccmd->fn(lwobj->argc, lwobj->argv);
             }
+#else
+            ccmd->fn(lwobj->argc, lwobj->argv);
+#endif
 #if LWSHELL_CFG_USE_LIST_CMD
         } else if (strncmp(lwobj->argv[0], "listcmd", 7U) == 0) {
             LWSHELL_OUTPUT(lwobj, "List of registered commands\r\n");

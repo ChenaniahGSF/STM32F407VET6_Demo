@@ -35,7 +35,7 @@
 #define LWPRINTF_OPTS_HDR_H
 
 /* Rename this file to "lwprintf_opts.h" for your application */
-
+#define LWPRINTF_CFG_ENABLE_SHORTNAMES 1
 /*
  * Open "include/lwprintf/lwprintf_opt.h" and
  * copy & replace here settings you want to change values
