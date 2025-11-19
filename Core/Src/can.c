@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "can.h"
 #include "logger.h"
+#include "isotp_user.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -133,10 +134,7 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 }
 
 /* USER CODE BEGIN 1 */
-CAN_RxHeaderTypeDef rx_header;
-uint8_t can_rx_data[8];
-
-HAL_StatusTypeDef Can_Send_Message(CAN_HandleTypeDef* hcan, uint32_t id, uint8_t* data, uint8_t len)
+HAL_StatusTypeDef Can_Send_Message(CAN_HandleTypeDef* hcan, uint32_t id, const uint8_t* data, uint8_t len)
 {
   CAN_TxHeaderTypeDef TxHeader;
   uint32_t TxMailbox;
@@ -156,8 +154,6 @@ HAL_StatusTypeDef Can_Send_Message(CAN_HandleTypeDef* hcan, uint32_t id, uint8_t
   ret = HAL_CAN_AddTxMessage(hcan, &TxHeader, data, &TxMailbox);
   if (ret != HAL_OK) {
     return HAL_ERROR;
-  } else {
-    //logger_info("Can Send Successfully.");
   }
 #if 1
   uint32_t timeout = 5;
@@ -169,19 +165,25 @@ HAL_StatusTypeDef Can_Send_Message(CAN_HandleTypeDef* hcan, uint32_t id, uint8_t
       }
       return HAL_TIMEOUT;
     }
-    HAL_Delay(50);
+    HAL_Delay(10);
   }
 #endif
 
   return HAL_OK;
 }
 
+CAN_RxHeaderTypeDef rx_header;
+uint8_t can_rx_data[8];
+
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
   if(hcan->Instance == CAN1) {
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header, can_rx_data);
     HAL_GPIO_TogglePin(USER_LED_GPIO_Port, USER_LED_Pin);
-    logger_hex(can_rx_data, sizeof(can_rx_data));
+    //logger_hex(can_rx_data, sizeof(can_rx_data));
+    if(rx_header.StdId == 0x7E0) { // 0x7E0 request diagnostic id
+      isotp_on_can_rx_message(can_rx_data, (uint8_t)rx_header.DLC);
+    }
   }
 }
 

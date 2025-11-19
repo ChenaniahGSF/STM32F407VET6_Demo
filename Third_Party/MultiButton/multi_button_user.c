@@ -7,6 +7,7 @@
 #include "multi_button_user.h"
 #include "logger.h"
 #include "tim.h"
+#include "isotp.h"
 
 #define MAX_BUTTONS  (2)
 
@@ -43,6 +44,15 @@ void generic_event_handler(Button* btn, const char* event_name)
                button_is_pressed(btn) ? "Yes" : "No");
     } else {
       logger_info("Button %d: %s", btn->button_id, event_name);
+      if(btn->button_id == 1) {
+        //send isotp message
+        logger_info("send isotp message");
+        uint8_t tx_data[128];
+        for(int i=0; i<128; i++) {
+          tx_data[i] = (i+1);
+        }
+        isotp_sending(tx_data, sizeof(tx_data));
+      }
     }
 }
 

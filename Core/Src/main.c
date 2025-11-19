@@ -31,6 +31,7 @@
 #include "multi_button_user.h"
 #include "lwshell/lwshell_user.h"
 #include "smarttimer_user.h"
+#include "isotp.h"
 
 /* USER CODE END Includes */
 
@@ -52,7 +53,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t isotp_rx_buf[256];
+uint32_t isotp_rx_len;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -76,7 +78,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
   stim_init();
   //set_timetick();
-  set_can_message();
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -114,8 +116,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
 	buttons_init();
-
   lwshell_user_init();
+  isotp_init();
 
   while (1)
   {
@@ -124,6 +126,11 @@ int main(void)
     /* USER CODE BEGIN 3 */
     //HAL_Delay(1000);
     stim_mainloop();
+    isotp_polling();
+    if(isotp_receiving(isotp_rx_buf, sizeof(isotp_rx_buf), &isotp_rx_len) == ISOTP_RET_OK) {
+      /* Handle physical addressing message */
+      logger_hex(isotp_rx_buf, isotp_rx_len);
+    }
   }
   /* USER CODE END 3 */
 }

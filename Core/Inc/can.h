@@ -41,7 +41,7 @@ extern CAN_HandleTypeDef hcan1;
 void MX_CAN1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-HAL_StatusTypeDef Can_Send_Message(CAN_HandleTypeDef* hcan, uint32_t id, uint8_t* data, uint8_t len);
+HAL_StatusTypeDef Can_Send_Message(CAN_HandleTypeDef* hcan, uint32_t id, const uint8_t* data, uint8_t len);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
